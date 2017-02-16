@@ -1,0 +1,75 @@
+#include <LiquidCrystal.h>
+ 
+int led = 13;
+
+ 
+//Arrays for the 4 inputs**********************************************
+float sensorValue[4] = {0,0,0,0};
+float voltageValue[4] = {0,0,0,0};
+ 
+//Char used for reading in Serial characters
+char inbyte = 0;
+//*******************************************************************************************
+ String readString;
+void setup() {
+  // initialise serial communications at 9600 bps:
+  Serial.begin(9600);
+    pinMode(led, OUTPUT);
+  digitalWrite(led, HIGH);
+}
+ 
+void loop() {
+    //when serial values have been received this will be true
+    while (Serial.available()) {
+    delay(10);  //small delay to allow input buffer to fill
+
+    char c = Serial.read();  //gets one byte from serial buffer
+    if (c == ',') {
+      break;
+    }  
+    if(c!='x'){
+    //breaks out of capture loop to print readstring
+    readString += c;
+    }
+  } //makes the string readString 
+
+  
+    
+    if (readString =="turn on the front lights"||readString=="lights on"||readString=="switch on the light"||readString=="turn on the lights")
+    {
+      //LED off
+      sendAndroidValues("successfully turned on the light sir");
+      digitalWrite(led, HIGH);
+    }
+    else if (readString =="turn off the front lights"||readString=="lights off"||readString=="switch off the light"||readString=="turn off the lights")
+    {
+      //LED on
+      sendAndroidValues("successfully turned off the light sir");
+      digitalWrite(led, LOW);
+    }
+    else if (readString.length() >0) {
+    sendAndroidValues(readString); //prints string to serial port out
+
+    readString=""; //clears variable for new input
+  }
+  readString="";
+  
+  //delay by 2s. Meaning we will be sent values every 2s approx
+  //also means that it can take up to 2 seconds to change LED state
+  delay(2000);
+}
+ 
+//sends the values from the sensor over serial to BT module
+void sendAndroidValues(String f)
+ {
+  //puts # before the values so our app knows what to do with the data
+  Serial.print('#');
+  Serial.print(f);
+  Serial.print('~');
+  Serial.println();
+  f="";
+  delay(10);        
+  //added a delay to eliminate missed transmissions
+}
+ 
+
